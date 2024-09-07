@@ -6,10 +6,11 @@ import requests
 import argparse
 import requests.exceptions
 from dotenv import load_dotenv
+from colorama import Fore, Style, init
 
 load_dotenv()
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s] - Value: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s] - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+init(autoreset=True)
 
 def file_exists(file_path):
     # Check if a file exists and exit if it does not
@@ -52,9 +53,14 @@ def fuzzing_tool(url, headers, proxy, cert_path, verify, values, filter_size):
 
             if filter_size and response_size == filter_size:
                 continue
+            if 200 <= response.status_code < 300:
+                code_color = Fore.GREEN
+            elif 300 <= response.status_code < 400:
+                code_color = Fore.YELLOW
+            else:
+                code_color = Fore.RED
 
-            #logging.info(f'Value: {value} Response Code: {response.status_code} Response Text: {response.text} Response Size: {response_size}')
-            logging.info(f'{value} [{response.status_code}] - Response Text: {response.text} Size: {response_size}')
+            logging.info(f'{Fore.MAGENTA}Value: {value} {code_color}[{response.status_code}] - {Fore.CYAN}Response Text: {response.text} {Fore.MAGENTA}Size: {response_size}{Style.RESET_ALL}')
         except requests.exceptions.RequestException as e:
             logging.error(f'Failed to make request for value {value}: {e}')
 
