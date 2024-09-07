@@ -1,6 +1,6 @@
 # FuzzSwarm
 
-**FuzzSwarm** is a multithreaded fuzzing tool designed for brute-forcing HTTP endpoints. It supports optional proxy usage, SSL configuration, and response size filtering to focus on significant results.
+**FuzzSwarm** is a fuzzing tool designed for brute-forcing HTTP endpoints. It supports optional proxy usage, SSL configuration, and response size filtering to focus on significant results.
 
 ## 📃 Requirements
 
