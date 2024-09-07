@@ -30,20 +30,9 @@ To run FuzzSwarm, use the following syntax:
 ### Example Usage:
 
 ```bash
-./FuzzSwarm -H headers.txt --range 1-1000,3 --ssl charles.pem --use-proxy https://example.com/api/BRUTE
-
-Output:
-➤ ./FuzzSwarm -H headers.txt --range 1-1000,3 --ssl charles.pem --use-proxy https://XXXX.XXXX/api/api/2fa/BRUTE
-Using proxy http://127.0.0.1:8888 -- http://127.0.0.1:8888
-Skipping header line: GET /api/api/2fa/222 HTTP/3
-Value: 001 Response Code: 403 Response Text: {"error":{"message":"Invalid code"}} Response Size: 36
-Value: 002 Response Code: 403 Response Text: {"error":{"message":"Invalid code"}} Response Size: 36
-Value: 003 Response Code: 403 Response Text: {"error":{"message":"Invalid code"}} Response Size: 36
-Value: 004 Response Code: 403 Response Text: {"error":{"message":"Invalid code"}} Response Size: 36
-Value: 005 Response Code: 403 Response Text: {"error":{"message":"Invalid code"}} Response Size: 36
-^C
-Fuzzing interrupted by user.
+./FuzzSwarm -H headers.txt --range 1-1000,3 --ssl charles.pem --use-proxy https://XXXX/api/2fa/BRUTE
 ```
+<img src="https://i.imgur.com/pqMFbIH.png">
 
 ### Available Parameters:
 
