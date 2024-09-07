@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+import sys
+import requests
+import argparse
+import requests.exceptions
+
+
+def read_headers(file_path):
+    headers = {}
+    with open(file_path, 'r') as file:
+        for line in file:
+            if ': ' in line:
+                key, value = line.strip().split(': ', 1)
+                headers[key] = value
+            else:
+                print(f"Skipping header line: {line.strip()}")
+    return headers
+
+
+def fuzzing_tool(url, headers, proxy, cert_path, verify, values):
+    for value in values:
+        try:
+            current_url = url.replace('BRUTE', value)
+            response = requests.get(current_url, headers=headers, proxies=proxy, cert=cert_path, verify=verify)
+            print(f'Value: {value} Response Code: {response.status_code} Response Text: {response.text}')
+        except requests.exceptions.RequestException as e:
+            print(f'Failed to make request for value {value}: {e}')
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Fuzzing tool based on HTTP requests.")
+    parser.add_argument('url', type=str, help="The target URL with 'BRUTE' as the placeholder for injection points.")
+    parser.add_argument('-H', '--headers', type=str, help="Path to the headers file.")
+    parser.add_argument('-w', '--wordlist', type=str, help="Path to the wordlist file.")
+    parser.add_argument('--range', type=str, help="Range of numbers to use, format start-end (e.g., 001-100).")
+    parser.add_argument('--ssl', type=str, help="Path to the SSL certificate file.")
+    args = parser.parse_args()
+
+    headers = read_headers(args.headers) if args.headers else {}
+    proxy = {'http': 'http://127.0.0.1:8888', 'https': 'http://127.0.0.1:8888'}
+    cert_path = args.ssl
+    verify = cert_path
+
+    try:
+        if args.wordlist:
+            with open(args.wordlist, 'r') as file:
+                values = [line.strip() for line in file]
+        elif args.range:
+            start, end = map(int, args.range.split('-'))
+            values = [f'{i:03}' for i in range(start, end+1)]
+        else:
+            raise ValueError("Either a wordlist or a range must be provided.")
+
+        fuzzing_tool(args.url, headers, proxy, cert_path, verify, values)
+
+    except KeyboardInterrupt:
+        print('\nFuzzing interrupted by user.')
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()
