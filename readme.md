@@ -24,7 +24,7 @@
 To run FuzzSwarm, use the following syntax:
 
 ```bash
-./FuzzSwarm <url> -H <headers.txt> --range <start-end> --ssl <ssl.pem> [options]
+./FuzzSwarm <url> -H <headers.txt> --range <start-end,numer_size Eg. 1-1000,3> --ssl <ssl.pem> [options]
 ```
 
 ### Example Usage:
@@ -48,7 +48,7 @@ Fuzzing interrupted by user.
 ### Available Parameters:
 
 - `-H`: Path to the headers file.
-- `--range`: Defines the numeric range for fuzzing (e.g., 001-100).
+- `--range`: Range of numbers to use, format start-end,digits (e.g., 001-100,3).
 - `--wordlist`: Path to a wordlist file.
 - `--ssl`: Path to the SSL certificate file.
 - `--use-proxy`: Enables proxy configuration, which is loaded from the `.env` file.
