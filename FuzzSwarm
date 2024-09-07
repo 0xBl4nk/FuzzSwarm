@@ -61,10 +61,11 @@ def main():
     parser.add_argument('url', type=str, help='The target URL with "BRUTE" as the placeholder for injection points.')
     parser.add_argument('-H', '--headers', type=str, help='Path to the headers file.')
     parser.add_argument('-w', '--wordlist', type=str, help='Path to the wordlist file.')
-    parser.add_argument('--range', type=str, help='Range of numbers to use, format start-end (e.g., 001-100).')
+    parser.add_argument('--range', type=str, help='Range of numbers to use, format start-end,digits (e.g., 001-100,3).')
     parser.add_argument('--ssl', type=str, help='Path to the SSL certificate file.')
     parser.add_argument('--use-proxy', action='store_true', help='Enable proxy configuration from .env file')
     parser.add_argument('-fs', type=int, help='Filer responses by size (skip responses with this size.')
+
     args = parser.parse_args()
     proxy = get_proxy_config(args.use_proxy)
     headers = read_headers(args.headers) if args.headers else {}
@@ -77,8 +78,10 @@ def main():
         with open(args.wordlist, 'r') as file:
             values = [line.strip() for line in file]
     if args.range:
-        start, end = map(int, args.range.split('-'))
-        values = [f'{i:03}' for i in range(start, end+1)]
+        range_part, *digits_part = args.range.split(',')
+        start, end = map(int, range_part.split('-'))
+        digits = int(digits_part[0]) if digits_part else 3
+        values = [f'{i:0{digits}}' for i in range(start, end+1)]
     if not values:
         print('Error: No Values provided for fuzzing.')
         sys.exit(1)
