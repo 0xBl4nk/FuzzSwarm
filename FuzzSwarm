@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 import os
 import sys
+import logging
 import requests
 import argparse
 import requests.exceptions
 from dotenv import load_dotenv
 
 load_dotenv()
+logging.basicConfig(level=logging.INFO, format='[%(asctime)s] - Value: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 
 def file_exists(file_path):
@@ -51,9 +53,10 @@ def fuzzing_tool(url, headers, proxy, cert_path, verify, values, filter_size):
             if filter_size and response_size == filter_size:
                 continue
 
-            print(f'Value: {value} Response Code: {response.status_code} Response Text: {response.text} Response Size: {response_size}')
+            #logging.info(f'Value: {value} Response Code: {response.status_code} Response Text: {response.text} Response Size: {response_size}')
+            logging.info(f'{value} [{response.status_code}] - Response Text: {response.text} Size: {response_size}')
         except requests.exceptions.RequestException as e:
-            print(f'Failed to make request for value {value}: {e}')
+            logging.error(f'Failed to make request for value {value}: {e}')
 
 
 def main():
