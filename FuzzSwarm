@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
+import os
 import sys
 import requests
 import argparse
 import requests.exceptions
+
+
+def file_exists(file_path):
+    if not os.path.exists(file_path):
+        print(f"Error: The file {file_path} does not exist.")
+        sys.exit(1)
 
 
 def read_headers(file_path):
@@ -36,23 +43,30 @@ def main():
     parser.add_argument('--ssl', type=str, help="Path to the SSL certificate file.")
     args = parser.parse_args()
 
-    headers = read_headers(args.headers) if args.headers else {}
+    if args.headers:
+        file_exists(args.headers)
+        headers = read_headers(args.headers)
+    else:
+        headers = {}
+
+    if args.wordlist:
+        file_exists(args.wordlist)
+        with open(args.wordlist, 'r') as file:
+            values = [line.strip() for line in file]
+    elif args.range:
+        start, end = map(int, args.range.split('-'))
+        values = [f'{i:03}' for i in range(start, end+1)]
+    else:
+        raise ValueError("Either a wordlist or a range must be provided.")
+        sys.exit(1)
+
+
     proxy = {'http': 'http://127.0.0.1:8888', 'https': 'http://127.0.0.1:8888'}
     cert_path = args.ssl
     verify = cert_path
 
     try:
-        if args.wordlist:
-            with open(args.wordlist, 'r') as file:
-                values = [line.strip() for line in file]
-        elif args.range:
-            start, end = map(int, args.range.split('-'))
-            values = [f'{i:03}' for i in range(start, end+1)]
-        else:
-            raise ValueError("Either a wordlist or a range must be provided.")
-
         fuzzing_tool(args.url, headers, proxy, cert_path, verify, values)
-
     except KeyboardInterrupt:
         print('\nFuzzing interrupted by user.')
         sys.exit(0)
