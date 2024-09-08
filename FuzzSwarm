@@ -7,10 +7,12 @@ import argparse
 import requests.exceptions
 from dotenv import load_dotenv
 from colorama import Fore, Style, init
+from concurrent.futures import ThreadPoolExecutor
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 init(autoreset=True)
+
 
 def file_exists(file_path):
     # Check if a file exists and exit if it does not
@@ -43,26 +45,29 @@ def get_proxy_config(use_proxy):
         return {}
 
 
+def fuzz_request(url, headers, proxy, cert_path, verify, value, filter_size):
+    try:
+        current_url = url.replace('BRUTE', value)
+        response = requests.get(current_url, headers=headers, proxies=proxy, cert=cert_path, verify=verify)
+        response_size = len(response.content)
+
+        if filter_size and response_size == filter_size:
+            return
+        if 200 <= response.status_code < 300:
+            code_color = Fore.GREEN
+        elif 300 <= response.status_code < 400:
+            code_color = Fore.YELLOW
+        else:
+            code_color = Fore.RED
+
+        logging.info(f'{Fore.MAGENTA}Value: {value} {code_color}[{response.status_code}] - {Fore.CYAN}Response Text: {response.text} {Fore.MAGENTA}Size: {response_size}{Style.RESET_ALL}')
+    except requests.exceptions.RequestException as e:
+        logging.error(f'Failed to make request for value {value}: {e}')
+
 def fuzzing_tool(url, headers, proxy, cert_path, verify, values, filter_size):
-    # Perform fuzzing requests with given parameters
-    for value in values:
-        try:
-            current_url = url.replace('BRUTE', value)
-            response = requests.get(current_url, headers=headers, proxies=proxy, cert=cert_path, verify=verify)
-            response_size = len(response.content)
-
-            if filter_size and response_size == filter_size:
-                continue
-            if 200 <= response.status_code < 300:
-                code_color = Fore.GREEN
-            elif 300 <= response.status_code < 400:
-                code_color = Fore.YELLOW
-            else:
-                code_color = Fore.RED
-
-            logging.info(f'{Fore.MAGENTA}Value: {value} {code_color}[{response.status_code}] - {Fore.CYAN}Response Text: {response.text} {Fore.MAGENTA}Size: {response_size}{Style.RESET_ALL}')
-        except requests.exceptions.RequestException as e:
-            logging.error(f'Failed to make request for value {value}: {e}')
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        # Pass each value to fuzz_request
+        executor.map(lambda value: fuzz_request(url, headers, proxy, cert_path, verify, value, filter_size), values)
 
 
 def main():
