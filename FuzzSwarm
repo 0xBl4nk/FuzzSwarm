@@ -38,14 +38,26 @@ def get_proxy_config(use_proxy):
     if use_proxy:
         http_proxy = os.getenv('HTTP_PROXY')
         https_proxy = os.getenv('HTTPS_PROXY')
-        print(f'Using proxy {http_proxy} -- {https_proxy}')
+        if http_proxy or https_proxy:
+            print(f'Using proxy {http_proxy} -- {https_proxy}')
+        else:
+            print('Proxy is enabled but no proxies are set in the environment.')
         return {'http': http_proxy, 'https': https_proxy}
     else:
+        # Desabilita o uso de proxy limpando as variáveis de ambiente
+        os.environ.pop('HTTP_PROXY', None)
+        os.environ.pop('HTTPS_PROXY', None)
+        os.environ.pop('http_proxy', None)  # Algumas vezes também são usadas em minúsculas
+        os.environ.pop('https_proxy', None)
         print('Not using proxy')
         return {}
 
 
 def fuzz_request(url, headers, proxy, cert_path, verify, value, filter_size):
+    options = {'headers': headers, 'cert': cert_path, 'verify': verify}
+    if proxy:
+        options['proxies'] = proxy
+    
     try:
         current_url = url.replace('BRUTE', value)
         response = requests.get(current_url, headers=headers, proxies=proxy, cert=cert_path, verify=verify)
