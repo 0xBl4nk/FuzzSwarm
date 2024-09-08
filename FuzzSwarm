@@ -64,8 +64,8 @@ def fuzz_request(url, headers, proxy, cert_path, verify, value, filter_size):
     except requests.exceptions.RequestException as e:
         logging.error(f'Failed to make request for value {value}: {e}')
 
-def fuzzing_tool(url, headers, proxy, cert_path, verify, values, filter_size):
-    with ThreadPoolExecutor(max_workers=10) as executor:
+def fuzzing_tool(url, headers, proxy, cert_path, verify, values, filter_size, threads):
+    with ThreadPoolExecutor(max_workers=threads) as executor:
         # Pass each value to fuzz_request
         executor.map(lambda value: fuzz_request(url, headers, proxy, cert_path, verify, value, filter_size), values)
 
@@ -79,6 +79,7 @@ def main():
     parser.add_argument('--ssl', type=str, help='Path to the SSL certificate file.')
     parser.add_argument('--use-proxy', action='store_true', help='Enable proxy configuration from .env file')
     parser.add_argument('-fs', type=int, help='Filer responses by size (skip responses with this size.')
+    parser.add_argument('-t', '--threads', type=int, default=10, help='Number of threads to use for fuzzing.')
 
     args = parser.parse_args()
     proxy = get_proxy_config(args.use_proxy)
@@ -101,7 +102,7 @@ def main():
         sys.exit(1)
 
     try:
-        fuzzing_tool(args.url, headers, proxy, cert_path, verify, values, args.fs)
+        fuzzing_tool(args.url, headers, proxy, cert_path, verify, values, args.fs, args.threads)
     except KeyboardInterrupt:
         print('\nFuzzing interrupted by user.')
         sys.exit(0)
@@ -112,4 +113,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
