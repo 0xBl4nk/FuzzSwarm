@@ -4,8 +4,7 @@
 
 ## 📃 Requirements
 
-- `Python 3.10.x` or higher
-- Python packages listed in `requirements.txt`
+- `Go 1.23.1` or higher
 
 ## Installation
 
@@ -16,7 +15,7 @@
 
 2. Install the dependencies:
     ```bash
-    pip3 install -r requirements.txt
+    go build
     ```
 
 ## Usage
@@ -24,25 +23,38 @@
 To run FuzzSwarm, use the following syntax:
 
 ```bash
-./FuzzSwarm <url> -H <headers.txt> --range <start-end,numer_size Eg. 1-1000,3> --ssl <ssl.pem> [options]
+./FuzzSwarm -url <url> -range/-w
 ```
 
-### Example Usage:
+### Example Full Usage:
 
 ```bash
-./FuzzSwarm -H headers.txt --range 1-1000,3 --ssl charles.pem --use-proxy https://XXXX/api/2fa/BRUTE
+./fuzzswarm -range 1-10000,3 -t 10 -url http://192.168.1.35:5000/api/BRUTE -rl 6 -use-proxy -fs 34
 ```
-<img src="https://i.imgur.com/pqMFbIH.png">
+<img src="https://i.imgur.com/m1wXsMB.png">
 
 ### Available Parameters:
 
 - `-H`: Path to the headers file.
-- `--range`: Range of numbers to use, format start-end,digits (e.g., 001-100,3).
-- `--wordlist`: Path to a wordlist file.
-- `--ssl`: Path to the SSL certificate file.
-- `--use-proxy`: Enables proxy configuration, which is loaded from the `.env` file.
+- `-range`: Range of numbers to use, format start-end,digits (e.g., 1-10000,3).
+- `-w`: Path to a wordlist file.
+- `-use-proxy`: Enable proxy and SSL configuration from .env file.
 - `-fs`: Filters out HTTP responses of a specific size. (skip responses with this size.)
-- `--threads`: Number of threads to use for fuzzing.
+- `-t`: Number of threads to use for fuzzing.
+
+# How to Generate a Valid SSL Certificate with OpenSSL
+fuzzswarm uses unified certificates, i.e. key and certificate in the same file.
+
+```bash
+cat certificate.pem privatekey.pem > fullcert.pem
+```
+If your unified certificate is .c12, you will need to convert to pem.
+```bash
+openssl pkcs12 -in yourfile.p12 -clcerts -nokeys -out certificate.pem
+openssl pkcs12 -in yourfile.p12 -nocerts -out privatekey.pem
+openssl rsa -in privatekey.pem -out privatekey.pem
+cat certificate.pem privatekey.pem > fullcert.pem
+```
 
 ## Contributing
 
