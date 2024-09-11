@@ -1,65 +1,92 @@
-# FuzzSwarm
+# fuzzswarm
 
-**FuzzSwarm** is a fuzzing tool designed for brute-forcing HTTP endpoints. It supports optional proxy usage, SSL configuration, and response size filtering to focus on significant results.
+`fuzzswarm` is a customizable and powerful URL fuzzing tool designed to test API endpoints by manipulating injectable parameters using a wordlist or a range of values.
 
-## 📃 Requirements
+## Features
 
-- `Go 1.23.1` or higher
+- **Support for Wordlist and Range:** You can provide a wordlist or a range of values for fuzzing.
+- **Multithreading:** Control the number of threads to send requests in parallel.
+- **Response Size Filtering:** Filter responses based on the size of the response body.
+- **Rate Limiting:** Set a delay between requests to avoid overloading targets.
+- **Color-Coded Status Codes:** Responses with different status codes are displayed in different colors for easy reading.
+
+## Requirements
+
+- Go 1.16 or higher
 
 ## Installation
 
 1. Clone this repository:
-    ```bash
-    git clone https://github.com/your-username/FuzzSwarm.git
-    ```
 
-2. Install the dependencies:
-    ```bash
+   ```bash
+   git clone https://github.com/yourusername/fuzzswarm.git
+   cd fuzzswarm
+  ```
+Build the tool:
+
+bash
+
     go build
-    ```
 
-## Usage
+Usage
 
-To run FuzzSwarm, use the following syntax:
+You can use fuzzswarm to fuzz URLs with a wordlist or a range of values.
+Example of Fuzzing with a Range:
 
-```bash
-./FuzzSwarm -url <url> -range/-w
-```
+bash
 
-### Example Full Usage:
+./fuzzswarm --range 1-10000,3 -t 10 -url http://192.168.1.35:5000/api/BRUTE -rl 100
 
-```bash
-./fuzzswarm -range 1-10000,3 -t 10 -url http://192.168.1.35:5000/api/BRUTE -rl 6 -use-proxy -fs 34
-```
-<img src="https://i.imgur.com/m1wXsMB.png">
+In this example, the tool:
 
-### Available Parameters:
+    Uses a range of values from 1 to 10000, with 3 digits (e.g., 001, 002).
+    Utilizes 10 threads to send requests in parallel.
+    The target endpoint is http://192.168.1.35:5000/api/BRUTE, where BRUTE will be replaced by the fuzzing values.
+    Sets a rate limit of 100 milliseconds between each request.
 
-- `-H`: Path to the headers file.
-- `-range`: Range of numbers to use, format start-end,digits (e.g., 1-10000,3).
-- `-w`: Path to a wordlist file.
-- `-use-proxy`: Enable proxy and SSL configuration from .env file.
-- `-fs`: Filters out HTTP responses of a specific size. (skip responses with this size.)
-- `-t`: Number of threads to use for fuzzing.
+Example of Fuzzing with a Wordlist:
 
-# How to Generate a Valid SSL Certificate with OpenSSL
-fuzzswarm uses unified certificates, i.e. key and certificate in the same file.
+bash
 
-```bash
-cat certificate.pem privatekey.pem > fullcert.pem
-```
-If your unified certificate is .c12, you will need to convert to pem.
-```bash
-openssl pkcs12 -in yourfile.p12 -clcerts -nokeys -out certificate.pem
-openssl pkcs12 -in yourfile.p12 -nocerts -out privatekey.pem
-openssl rsa -in privatekey.pem -out privatekey.pem
-cat certificate.pem privatekey.pem > fullcert.pem
-```
+./fuzzswarm -w wordlist.txt -t 10 -url http://192.168.1.35:5000/api/BRUTE -rl 100
 
-## Contributing
+In this case, the tool:
 
-1. Fork this repository.
-2. Create a new branch: `git checkout -b <branch_name>`.
-3. Make your changes and commit: `git commit -m '<commit_message>'`.
-4. Push to your branch: `git push origin <branch_name>`.
-5. Open a pull request.
+    Reads fuzzing values from wordlist.txt.
+    Uses 10 threads and a rate limit of 100 milliseconds between requests.
+
+Options:
+
+    -url: Target URL, where BRUTE is the fuzzing injection point.
+    -t: Number of threads.
+    -rl: Rate limit between requests in milliseconds.
+    -fs: Response size filter (ignores responses of the specified size).
+    -w: Path to the wordlist.
+    --range: Number range to be used for fuzzing (e.g., 1-1000,3).
+
+Contributing
+
+    Fork this repository.
+    Create a new feature branch: git checkout -b my-new-feature
+    Commit your changes: git commit -m 'Add new feature'
+    Push to the branch: git push origin my-new-feature
+    Open a pull request!
+
+License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+markdown
+
+
+### Key Sections:
+
+- **Overview:** Explains the purpose of the tool.
+- **Features:** Lists the main features of the tool.
+- **Installation:** Explains how to clone and build the project.
+- **Usage:** Shows examples of how to run the tool with a wordlist or range.
+- **Options:** Describes the command-line options available.
+- **Contributing:** Explains how to contribute to the project.
+- **License:** Mentions the licensing information.
+
+Now your project is fully documented in English! If you need further adjustments
