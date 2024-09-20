@@ -20,5 +20,6 @@ build/
 
 *.test
 
+.env
 go.sum
 header
