@@ -17,6 +17,7 @@ type Config struct {
     FilterSize int
     RateLimit  int
     Range      string
+    Verbose    bool
 }
 
 func LoadConfig() (Config, error) {
@@ -29,6 +30,7 @@ func LoadConfig() (Config, error) {
     flag.IntVar(&cfg.FilterSize, "fs", 0, "Filter responses by size (skip responses with this size).")
     flag.IntVar(&cfg.RateLimit, "rl", 0, "Rate limit in milliseconds between requests.")
     flag.StringVar(&cfg.Range, "range", "", "Range of numbers to use, format start-end,digits (e.g., 1-10000,3).")
+    flag.BoolVar(&cfg.Verbose, "v", false, "Display verbose output including response preview.")
     flag.Parse()
 
     if cfg.URL == "" {

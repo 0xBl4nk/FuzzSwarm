@@ -18,7 +18,6 @@ func StartFuzzing(cfg Config) {
     var wg sync.WaitGroup
     semaphore := make(chan struct{}, cfg.Threads)
 
-    // Criando o cliente HTTP uma vez, fora do loop de requisições
     client := CreateClient(cfg.UseProxy)
 
     for _, value := range cfg.Values {
@@ -29,7 +28,7 @@ func StartFuzzing(cfg Config) {
                 wg.Done()
                 <-semaphore
             }()
-            FuzzRequest(cfg, client, val)  // Passando o cliente como argumento
+            FuzzRequest(cfg, client, val)
         }(value)
     }
 
@@ -72,24 +71,31 @@ func FuzzRequest(cfg Config, client *http.Client, value string) {
         return
     }
 
-    printResponse(value, resp.StatusCode, responseBody, responseSize)
+    printResponse(cfg, value, resp.StatusCode, responseSize, responseBody)
 }
 
-// Definindo a função printResponse
-func printResponse(value string, statusCode int, responseBody string, responseSize int) {
-    // Limitar o tamanho do conteúdo que será exibido (por exemplo, mostrar apenas os primeiros 100 caracteres)
-    previewLength := 100
-    if len(responseBody) > previewLength {
-        responseBody = responseBody[:previewLength] + "..."
-    }
+func printResponse(cfg Config, value string, statusCode int, responseSize int, responseBody string) {
+    if cfg.Verbose {
+        previewLength := 100
+        if len(responseBody) > previewLength {
+            responseBody = responseBody[:previewLength] + "..."
+        }
 
-    // Exibir apenas o código de status, tamanho da resposta e uma prévia do conteúdo
-    if statusCode >= 200 && statusCode < 300 {
-        color.New(color.FgGreen).Printf("Value: %s [%d] - Response Size: %d - Preview: %s\n", value, statusCode, responseSize, responseBody)
-    } else if statusCode >= 300 && statusCode < 400 {
-        color.New(color.FgYellow).Printf("Value: %s [%d] - Response Size: %d - Preview: %s\n", value, statusCode, responseSize, responseBody)
+        if statusCode >= 200 && statusCode < 300 {
+            color.New(color.FgGreen).Printf("Value: %s [%d] - Response Size: %d - Preview: %s\n", value, statusCode, responseSize, responseBody)
+        } else if statusCode >= 300 && statusCode < 400 {
+            color.New(color.FgYellow).Printf("Value: %s [%d] - Response Size: %d - Preview: %s\n", value, statusCode, responseSize, responseBody)
+        } else {
+            color.New(color.FgRed).Printf("Value: %s [%d] - Response Size: %d - Preview: %s\n", value, statusCode, responseSize, responseBody)
+        }
     } else {
-        color.New(color.FgRed).Printf("Value: %s [%d] - Response Size: %d - Preview: %s\n", value, statusCode, responseSize, responseBody)
+        if statusCode >= 200 && statusCode < 300 {
+            color.New(color.FgGreen).Printf("Value: %s [%d] - Response Size: %d\n", value, statusCode, responseSize)
+        } else if statusCode >= 300 && statusCode < 400 {
+            color.New(color.FgYellow).Printf("Value: %s [%d] - Response Size: %d\n", value, statusCode, responseSize)
+        } else {
+            color.New(color.FgRed).Printf("Value: %s [%d] - Response Size: %d\n", value, statusCode, responseSize)
+        }
     }
 }
 
