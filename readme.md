@@ -41,6 +41,7 @@ To run FuzzSwarm, use the following syntax:
 - `-use-proxy`: Enable proxy and SSL configuration from .env file.
 - `-fs`: Filters out HTTP responses of a specific size. (skip responses with this size.)
 - `-t`: Number of threads to use for fuzzing.
+- `-v`: Display verbose output including preview of response bodies.
 
 # How to Generate a Valid SSL Certificate with OpenSSL
 fuzzswarm uses unified certificates, i.e. key and certificate in the same file.
