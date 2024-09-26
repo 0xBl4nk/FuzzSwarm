@@ -35,13 +35,22 @@ To run FuzzSwarm, use the following syntax:
 
 ### Available Parameters:
 
-- `-H`: Path to the headers file.
-- `-range`: Range of numbers to use, format start-end,digits (e.g., 1-10000,3).
-- `-w`: Path to a wordlist file.
-- `-use-proxy`: Enable proxy and SSL configuration from .env file.
-- `-fs`: Filters out HTTP responses of a specific size. (skip responses with this size.)
-- `-t`: Number of threads to use for fuzzing.
-- `-v`: Display verbose output including preview of response bodies.
+```
+Flags:
+  -d, --data string       POST data with 'BRUTE' as the placeholder for injection.
+  -f, --filter-size int   Filter responses by size (skip responses with this size).
+  -H, --headers string    Optional path to the headers file.
+  -h, --help              help for fuzzswarm
+  -X, --method string     HTTP method to use (GET or POST). (default "GET")
+  -R, --range string      Range of numbers to use, format start-end,digits (e.g., 1-10000,3).
+  -r, --rate-limit int    Rate limit in milliseconds between requests.
+      --ssl-cert string   Path to SSL certificate file (optional).
+  -t, --threads int       Number of threads to use for fuzzing. (default 10)
+  -u, --url string        The target URL with 'BRUTE' as the placeholder for injection points.
+  -p, --use-proxy         Enable proxy configuration from .env file.
+  -v, --verbose           Display verbose output including response preview.
+  -w, --wordlist string   Path to the wordlist file.
+```
 
 # How to Generate a Valid SSL Certificate with OpenSSL
 fuzzswarm uses unified certificates, i.e. key and certificate in the same file.
