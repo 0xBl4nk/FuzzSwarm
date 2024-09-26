@@ -1,5 +1,6 @@
 server.py
 charles.pem
+notes
 
 bin/
 pkg/
@@ -20,5 +21,4 @@ build/
 
 *.test
 
-go.sum
 header
