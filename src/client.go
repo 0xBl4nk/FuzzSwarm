@@ -2,51 +2,45 @@ package src
 
 import (
     "crypto/tls"
-    "log"
     "net/http"
     "net/url"
     "os"
+    "time"
 )
 
-func CreateClient(useProxy bool) *http.Client {
-    client := &http.Client{}
+// CreateClient configures and returns an HTTP client.
+// It sets up proxy and SSL certificates if provided.
+func CreateClient(useProxy bool, timeout int, sslCertPath string) *http.Client {
+    transport := &http.Transport{}
 
     if useProxy {
         proxy := os.Getenv("HTTP_PROXY")
-        var proxyURL *url.URL
-        var err error
-
-        if proxy != "" {
-            proxyURL, err = url.Parse(proxy)
-            if err != nil {
-                log.Fatalf("Invalid proxy URL: %v", err)
-            }
-            client.Transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
-            log.Printf("Using proxy: %s", proxy)
-        } else {
-            log.Println("Proxy configuration is missing in the .env file.")
-            log.Println("Exiting program since -use-proxy flag was used but no proxy is configured.")
-            os.Exit(1)
+        if proxy == "" {
+            LogFatal("Proxy configuration is missing in the .env file.")
         }
 
-        sslCertPath := os.Getenv("SSL_CERT_PATH")
+        proxyURL, err := url.Parse(proxy)
+        if err != nil {
+            LogFatal("Invalid proxy URL: %v", err)
+        }
+        transport.Proxy = http.ProxyURL(proxyURL)
+        LogInfo("Using proxy: %s", proxy)
+
+        // SSL certificate setup if sslCertPath is provided
         if sslCertPath != "" {
             cert, err := tls.LoadX509KeyPair(sslCertPath, sslCertPath)
             if err != nil {
-                log.Fatalf("Failed to load SSL certificate from %s: %v", sslCertPath, err)
+                LogFatal("Failed to load SSL certificate from %s: %v", sslCertPath, err)
             }
-            client.Transport = &http.Transport{
-                Proxy:           http.ProxyURL(proxyURL),
-                TLSClientConfig: &tls.Config{Certificates: []tls.Certificate{cert}},
-            }
-            log.Printf("Using SSL certificate from: %s", sslCertPath)
-        } else {
-            log.Println("SSL certificate configuration is missing in the .env file.")
-            log.Println("Exiting program since -use-proxy flag was used but no SSL certificate is configured.")
-            os.Exit(1)
+            transport.TLSClientConfig = &tls.Config{Certificates: []tls.Certificate{cert}}
+            LogInfo("Using SSL certificate from: %s", sslCertPath)
         }
+    }
+
+    client := &http.Client{
+        Transport: transport,
+        Timeout:   time.Duration(timeout) * time.Second,
     }
 
     return client
 }
-

@@ -1,71 +1,101 @@
 package src
 
 import (
-    "flag"
-    "os"
-    "strings"
-    "strconv"
+    "errors"
     "fmt"
+    "net/url"
+    "strconv"
+    "strings"
+
+    "github.com/spf13/cobra"
 )
 
+// Config holds all configuration settings for the fuzzing process.
 type Config struct {
-    URL        string
-    Headers    map[string]string
-    UseProxy   bool
-    Values     []string
-    Threads    int
-    FilterSize int
-    RateLimit  int
-    Range      string
-    Verbose    bool
+    URL         string
+    Headers     map[string]string
+    UseProxy    bool
+    Values      []string
+    Threads     int
+    FilterSize  int
+    RateLimit   int
+    Range       string
+    Verbose     bool
+    Timeout     int
+    Retries     int
+    Method      string
+    Data        string
+    SSLCertPath string
 }
 
-func LoadConfig() (Config, error) {
+// LoadConfig parses and validates command-line flags to populate the Config struct.
+func LoadConfig(cmd *cobra.Command) (Config, error) {
     var cfg Config
-    flag.StringVar(&cfg.URL, "url", "", "The target URL with 'BRUTE' as the placeholder for injection points.")
-    headersPath := flag.String("H", "", "Optional path to the headers file.")
-    wordlistPath := flag.String("w", "", "Path to the wordlist file.")
-    flag.BoolVar(&cfg.UseProxy, "use-proxy", false, "Enable proxy and SSL configuration from .env file.")
-    flag.IntVar(&cfg.Threads, "t", 10, "Number of threads to use for fuzzing.")
-    flag.IntVar(&cfg.FilterSize, "fs", 0, "Filter responses by size (skip responses with this size).")
-    flag.IntVar(&cfg.RateLimit, "rl", 0, "Rate limit in milliseconds between requests.")
-    flag.StringVar(&cfg.Range, "range", "", "Range of numbers to use, format start-end,digits (e.g., 1-10000,3).")
-    flag.BoolVar(&cfg.Verbose, "v", false, "Display verbose output including response preview.")
-    flag.Parse()
+
+    cfg.URL, _ = cmd.Flags().GetString("url")
+    headersPath, _ := cmd.Flags().GetString("headers")
+    wordlistPath, _ := cmd.Flags().GetString("wordlist")
+    cfg.UseProxy, _ = cmd.Flags().GetBool("use-proxy")
+    cfg.Threads, _ = cmd.Flags().GetInt("threads")
+    cfg.FilterSize, _ = cmd.Flags().GetInt("filter-size")
+    cfg.RateLimit, _ = cmd.Flags().GetInt("rate-limit")
+    cfg.Range, _ = cmd.Flags().GetString("range")
+    cfg.Verbose, _ = cmd.Flags().GetBool("verbose")
+    cfg.Timeout = 10 // Default timeout in seconds
+    cfg.Retries = 3  // Default number of retries
+    cfg.Method, _ = cmd.Flags().GetString("method")
+    cfg.Data, _ = cmd.Flags().GetString("data")
+    cfg.SSLCertPath, _ = cmd.Flags().GetString("ssl-cert")
 
     if cfg.URL == "" {
-        flag.Usage()
-        os.Exit(1)
+        return cfg, errors.New("the --url flag is required")
     }
 
-    if *headersPath != "" {
-        headers, err := ReadHeaders(*headersPath)
+    // Validate URL format
+    parsedURL, err := url.Parse(cfg.URL)
+    if err != nil || !(parsedURL.Scheme == "http" || parsedURL.Scheme == "https") {
+        return cfg, errors.New("invalid URL format. Ensure it starts with http:// or https://")
+    }
+
+    // Validate HTTP method
+    cfg.Method = strings.ToUpper(cfg.Method)
+    if cfg.Method != "GET" && cfg.Method != "POST" {
+        return cfg, errors.New("invalid HTTP method. Only GET and POST are supported")
+    }
+
+    // If method is POST, data must be provided
+    if cfg.Method == "POST" && cfg.Data == "" {
+        return cfg, errors.New("POST method requires --data flag")
+    }
+
+    if headersPath != "" {
+        headers, err := ReadHeaders(headersPath)
         if err != nil {
-            return cfg, err
+            return cfg, fmt.Errorf("error reading headers: %v", err)
         }
         cfg.Headers = headers
     }
 
-    if *wordlistPath != "" {
-        values, err := ReadValues(*wordlistPath)
+    if wordlistPath != "" {
+        values, err := ReadValues(wordlistPath)
         if err != nil {
-            return cfg, err
+            return cfg, fmt.Errorf("error reading wordlist: %v", err)
         }
         cfg.Values = values
     } else if cfg.Range != "" {
         values, err := parseRange(cfg.Range)
         if err != nil {
-            return cfg, err
+            return cfg, fmt.Errorf("error parsing range: %v", err)
         }
         cfg.Values = values
     } else {
-        return cfg, fmt.Errorf("Either a range or a wordlist must be provided")
+        return cfg, errors.New("either a range or a wordlist must be provided")
     }
 
     return cfg, nil
 }
 
-// Função para parsear o range
+// parseRange generates a slice of strings based on the provided range string.
 func parseRange(rangeStr string) ([]string, error) {
     parts := strings.Split(rangeStr, ",")
     if len(parts) != 2 {
@@ -94,4 +124,3 @@ func parseRange(rangeStr string) ([]string, error) {
     }
     return values, nil
 }
-
