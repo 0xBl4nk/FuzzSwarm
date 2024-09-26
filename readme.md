@@ -15,7 +15,7 @@
 
 2. Install the dependencies:
     ```bash
-    go build
+    make build
     ```
 
 ## Usage
