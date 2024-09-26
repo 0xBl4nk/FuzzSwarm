@@ -26,12 +26,12 @@ To run FuzzSwarm, use the following syntax:
 ./FuzzSwarm -url <url> -range/-w
 ```
 
-### Example Full Usage:
+### Example Usage:
 
 ```bash
-./fuzzswarm -range 1-10000,3 -t 10 -url http://192.168.1.35:5000/api/BRUTE -rl 6 -use-proxy -fs 34
+./fuzzswarm -R 1-10000,3 -t 10 -X POST -d "param=BRUTE"-u http://192.168.1.35:5000/api/test -f 34 -v
 ```
-<img src="https://i.imgur.com/m1wXsMB.png">
+<img src="https://i.imgur.com/8sf7iLI.png">
 
 ### Available Parameters:
 
