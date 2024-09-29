@@ -1,5 +1,5 @@
-# OBSOLETE version! Access FuzzSwarm2 in my repositories, or through the link:  https://github.com/bl4nk/FuzzSwarm2
-OBSOLETE version! Access FuzzSwarm2 in my repositories, or through the link:  https://github.com/bl4nk/FuzzSwarm2
+# OBSOLETE version! Access FuzzSwarm2 in my repositories, or through the link:  https://github.com/0xbl4nk/FuzzSwarm2
+OBSOLETE version! Access FuzzSwarm2 in my repositories, or through the link:  https://github.com/0xbl4nk/FuzzSwarm2
 
 # FuzzSwarm
 
